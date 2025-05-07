@@ -20,6 +20,4 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pwd
-        ls
         pylint --rcfile=pylintrc $(git ls-files '*.py')
