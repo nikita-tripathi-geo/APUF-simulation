@@ -10,7 +10,8 @@ from multiprocessing import Pool, cpu_count
 import numpy as np
 
 
-def generate_k_challenges(k: int = 1, d: int = 128, seed: int = None) -> np.ndarray:
+def generate_k_challenges(k: int = 1, d: int = 128,
+                          seed: int = None) -> np.ndarray:
     """Generate `k` random challenges and map them to LADM phase vectors.
 
     Each challenge is a binary vector of length `d`. This function
@@ -71,7 +72,8 @@ def generate_n_k_challenges(n: int = 1, k: int = 1,
         seed (int, optional): PRNG seed for reproducibility. Defaults to None.
 
     Returns:
-        np.ndarray: Array of shape `(n, d+1, k)` containing `n` sequences of `k` challenges.
+        np.ndarray: Array of shape `(n, d+1, k)` containing
+            `n` sequences of `k` challenges.
     """
     # Input validation
     assert isinstance(n, int) and n > 0, "n must be a positive integer"
@@ -80,7 +82,7 @@ def generate_n_k_challenges(n: int = 1, k: int = 1,
     assert isinstance(d, int) and d > 0, "d must be a positive integer"
     if seed:
         assert isinstance(seed, int), "seed must be an integer or None"
-    
+
     # Adjust the number of layers
     d = d + 1
 
@@ -127,7 +129,7 @@ def unit_generation(params: tuple[int, int, int]) -> np.ndarray:
 
 def generate_challenges_mp(n: int = 1, k: int = 1,
                             d: int = 128, seed: int = None,
-                            processes: int = cpu_count()) -> list[np.ndarray]:
+                            proc: int = cpu_count()) -> list[np.ndarray]:
     """Generate `n` sets of `k` random challenges in parallel.
 
     This function spawns a pool of worker processes to generate `n`
@@ -140,7 +142,7 @@ def generate_challenges_mp(n: int = 1, k: int = 1,
             Number of challenges per sequence.
         d (int):
             Length of each challenge (number of arbiter stages).
-        processes (int):
+        proc (int):
             Number of worker processes to use in the Pool. Defaults to maximum
             available cores.
         seed (int):
@@ -157,13 +159,13 @@ def generate_challenges_mp(n: int = 1, k: int = 1,
     assert isinstance(d, int) and d > 0, "d must be a positive integer"
     if seed:
         assert isinstance(seed, int), "seed must be an integer or None"
-    assert isinstance(processes, int) and processes > 0, "processes must be a positive integer"
+    assert isinstance(proc, int) and proc > 0, "proc must be a positive integer"
 
     # base is 0 if seed is None
     base = seed or 0
     params = [(k, d, s+base) for s in range(n)]
 
-    with Pool(processes=processes) as pool:
+    with Pool(processes=proc) as pool:
         chals = pool.map(
             unit_generation,
             params
@@ -182,7 +184,7 @@ def main():
     # test multiprocess
     bigchal1 = generate_challenges_mp(5, 10, 64, 1)
 
-    print("Done")
+    print(chal1, chal2, chal3, bigchal1)
 
 
 
