@@ -117,7 +117,7 @@ class APUF:
 
 
     @staticmethod
-    def compact_responses(resp: np.ndarray[np.int8]) -> bytes:
+    def compact_responses(resp: np.ndarray) -> bytes:
         """Pack a 1-D array of 0/1 response bits into a bytes object.
 
         This method takes a numpy array of response bits (dtype np.int8)
@@ -151,7 +151,7 @@ class APUF:
 
 
 def main():
-    from challenges import generate_k_challenges
+    from challenges import generate_k_challenges    #pylint: disable=import-outside-toplevel
     # TESTING ONLY
     a = APUF(64)
     b = APUF(32)
