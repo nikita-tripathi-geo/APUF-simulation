@@ -1,7 +1,7 @@
-"""Simulate an Arbiter PUF and its corresponding challenge-response behavior
+"""Simulate an delay-based PUFs and their challenge-response behaviors
 using Lim's Linear Additive Delay Model (LADM).
 
-# Usage:
+# Usage: TODO UPDATE
 ```
     # As a library
     from apuf import APUF
@@ -112,14 +112,14 @@ class Response:
         """
         if not isinstance(other, Response):
             raise TypeError("distance requires another Response")
-        # Length checking handled by add/sub
-        diff = self - other
+        # Length checking handled by xor/add/sub
+        diff = self ^ other
         return diff.hw
 
 
+
 class LADM(ABC):
-    """TODO - Abstract class for all simulated PUFs that use Lim's
-    Linear Additive Delay Model.
+    """Abstract interface for all delay-based PUFs using LADM.
     """
 
     @abstractmethod
@@ -153,15 +153,15 @@ class LADM(ABC):
         return bytes(resp)
 
 
+
 class APUF(LADM):
     """Simulate an Arbiter Physically Unclonable Function (APUF) via LADM.
 
     This class samples independent biases of each layer (weights)
     and provides methods for:
-      - thresholding a delay difference (float) into a bit,
+      - thresholding an array of delay differences (float) into a Response,
       - simulating measurement noise using a Gaussian distribution
-        and computing noisy responses for many challenges at once,
-      - generating random challenges and mapping them to LADM phase vectors.
+        and computing noisy responses for many challenges at once.
     """
 
     def __init__(self, d: int = 128, mean: float = 0.0,
@@ -243,12 +243,29 @@ class APUF(LADM):
 
 
 
-# class XORPUF(APUF):
-#     """TODO - how does this even work?
-#     """
-#     def __init__(self, n: int = 2, d: int = 128,
-#                  mean: float = 0, std: float = 0.05):
-#         super().__init__(d, mean, std)
+class XORPUF(LADM):
+    """Simulate an XOR-PUF via LADM.
+
+    This class samples independent biases of each layer (weights)
+    and provides methods for:
+      - thresholding an array of delay differences (float) into a Response,
+      - simulating measurement noise using a Gaussian distribution
+        and computing noisy responses for many challenges at once.
+    """
+    def __init__(self, children: list[APUF]):
+        """
+        children: list of APUF instances whose bit-wise
+                  responses will be XOR-ed together.
+        """
+        self.children = children
+
+    def get_responses(self, chals: np.ndarray) -> Response:
+        # get each child’s response, then XOR them all
+        child_responses = [puf.get_responses(chals) for puf in self.children]
+        xor_response = child_responses[0]
+        for cr in child_responses[1:]:
+            xor_response ^= cr
+        return xor_response
 
 
 def main():
