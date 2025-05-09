@@ -6,7 +6,7 @@ using Lim's Linear Additive Delay Model (LADM).
 # Usage: TODO UPDATE
 ```
     # As a library
-    from apuf import APUF
+    from apuf import APUF, XORPUF
     from challenges import generate_k_challenges
 
     # Initialize a 64-layer APUF, all weights from N(0,0.05)
@@ -266,24 +266,3 @@ class XORPUF(LADM):
         for cr in child_responses[1:]:
             xor_response ^= cr
         return xor_response
-
-
-def main():
-    from challenges import generate_k_challenges    #pylint: disable=import-outside-toplevel
-    # TESTING ONLY
-    a = APUF(64)
-    b = APUF(32)
-
-    achal = generate_k_challenges(10, 64)
-
-    bchal = generate_k_challenges(10, 32)
-
-    aresp = a.get_noisy_responses(achal)
-    bresp = b.get_noisy_responses(bchal)
-
-    # bigchal = APUF.generate_n_k_challenges(5, 10, 64, 8)
-
-    print(aresp, bresp)
-
-if __name__ == "__main__":
-    main()

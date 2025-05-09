@@ -172,21 +172,3 @@ def generate_challenges_mp(n: int = 1, k: int = 1,
         )
 
     return chals
-
-
-def main():
-    """Quick tests for challenge generators."""
-    # Test challenge generation
-    chal1 = generate_k_challenges(10, 64, 1)
-    chal2 = generate_k_challenges(10, 64, 1)
-    chal3 = generate_k_challenges(10, 64)
-
-    # test multiprocess
-    bigchal1 = generate_challenges_mp(5, 10, 64, 1)
-
-    print(chal1, chal2, chal3, bigchal1)
-
-
-
-if __name__ == "__main__":
-    main()
