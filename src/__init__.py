@@ -11,7 +11,7 @@ __version__ = "0.1.0"
 from .apuf import APUF, XORPUF
 from .challenges import generate_k_challenges, generate_n_k_challenges
 
-# Define what’s exported when someone does: from apuf import *
+# What’s exported with: `from apuf import *`
 __all__ = [
     "APUF",
     "XORPUF",
