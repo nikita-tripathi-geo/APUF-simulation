@@ -18,10 +18,142 @@ using Lim's Linear Additive Delay Model (LADM).
     print(resp)
 ```
 """
+from abc import ABC, abstractmethod
 import numpy as np
 
 
-class APUF:
+class Response:
+    """
+    Immutable response vector for a delay-based PUF.
+    """
+    def __init__(self, data):
+        # Convert input to 1D numpy bool array
+        arr = np.asarray(data, dtype="?")
+        if arr.ndim != 1:
+            raise ValueError(f"Response must be 1D, got shape {arr.shape}")
+        # Make it read-only
+        arr.setflags(write=False)
+        self._data = arr
+
+    def __len__(self):
+        return self._data.size
+
+    def __getitem__(self, idx):
+        return self._data[idx]
+
+    @property
+    def length(self) -> int:
+        """Length of the response."""
+        return len(self)
+
+    @property
+    def hw(self) -> int:
+        """Hamming weight of the response."""
+        return np.count_nonzero(self._data)
+
+    def __str__(self) -> str:
+        """Binary string, e.g. '1010010'."""
+        return "".join("1" if bit else "0" for bit in self._data)
+
+    def __repr__(self):
+        """For debugging."""
+        return f"Response('{self._data}')"
+
+    def __bytes__(self):
+        """Convert to a bytes object."""
+        return bytes(np.packbits(self._data, bitorder="big"))
+
+    def __invert__(self):
+        """Bitwise NOT."""
+        return Response(np.logical_not(self._data))
+
+    def __and__(self, other):
+        """Bitwise AND."""
+        if not isinstance(other, Response):
+            return NotImplemented
+        if self.length != other.length:
+            raise ValueError("Cannot AND Responses of different length")
+        return Response(np.logical_and(self._data, other._data))
+
+    def __or__(self, other):
+        """Bitwise OR."""
+        if not isinstance(other, Response):
+            return NotImplemented
+        if self.length != other.length:
+            raise ValueError("Cannot OR Responses of different length")
+        return Response(np.logical_or(self._data, other._data))
+
+    def __xor__(self, other):
+        """Bitwise XOR."""
+        if not isinstance(other, Response):
+            return NotImplemented
+        if self.length != other.length:
+            raise ValueError("Cannot XOR Responses of different length")
+        return Response(self._data ^ other._data)
+
+    def __add__(self, other):
+        """Also bitwise XOR (addition)."""
+        return self.__xor__(other)
+
+    def __sub__(self, other):
+        """Also bitwise XOR (subtraction)."""
+        return self.__add__(other)
+
+    def __eq__(self, other):
+        if not isinstance(other, Response):
+            return NotImplemented
+        if self.length != other.length:
+            raise ValueError("Cannot XOR Responses of different length")
+        return np.array_equal(self._data, other._data)
+
+    def dist(self, other) -> int:
+        """
+        Hamming distance between two Responses.
+        """
+        if not isinstance(other, Response):
+            raise TypeError("distance requires another Response")
+        # Length checking handled by add/sub
+        diff = self - other
+        return diff.hw
+
+
+class LADM(ABC):
+    """TODO - Abstract class for all simulated PUFs that use Lim's
+    Linear Additive Delay Model.
+    """
+
+    @abstractmethod
+    def get_responses(self, chals: np.ndarray,
+                     nmean: float, nstd: float) -> Response:
+        """Given `k` challenges and noise parameters, return a `k` bit response.
+        """
+        pass
+
+
+    @staticmethod
+    def compact_responses(resp: Response) -> bytes:
+        """Pack a 1-D array of 0/1 response bits into a bytes object.
+
+        This method takes a multi-bit response (Response)
+        and returns the packed bits as raw bytes, grouping each consecutive
+        8 bits into one byte (big-endian within each byte).
+
+        Args:
+            resp (Response): 1-D array of `k` response bits.
+
+        Returns:
+            bytes: The packed bytes.
+
+        Raises:
+            AssertionError: If `resp` is not a Response.
+        """
+        # input validation
+        assert isinstance(resp, Response), "resp must be a Response"
+
+        return bytes(resp)
+
+
+class APUF(LADM):
     """Simulate an Arbiter Physically Unclonable Function (APUF) via LADM.
 
     This class samples independent biases of each layer (weights)
@@ -63,40 +195,34 @@ class APUF:
             scale=self.weight_std,
             size=self.d)
 
-        # Vectorized thresholding function.
-        # Takes a float ndarray. Returns a byte (instead of int).
-        self.__determine_responses_vectorized = np.vectorize(
-            self.__determine_responses,
-            "b")
+
+    def __determine_responses(self, delays: np.ndarray) -> Response:
+        """Threshold delays to obtain response bits (Response)."""
+        return Response(delays > 0)
 
 
-    def __determine_responses(self, delay: float) -> int:
-        """Threshold delay to obtain a response bit."""
-        return 1 if delay > 0 else 0
-
-
-    def get_noisy_responses(self, chals: np.ndarray,
-                            mean: float = 0.0,
-                            std: float = 0.005) -> np.ndarray:
+    def get_responses(self, chals: np.ndarray,
+                            nmean: float = 0.0,
+                            nstd: float = 0.005) -> Response:
         """Generate multi-bit (noisy) APUF responses.
 
         Args:
             chals (np.ndarray):
                 Sequence of challenges (phase vectors). Shape `(d+1, k)`.
-            mean (float):
+            nmean (float):
                 Mean of Gaussian noise added to each weight. Defaults to `0.0`.
-            std (float):
+            nstd (float):
                 Standard deviation of Gaussian noise. Defaults to `0.005`.
 
         Returns:
-            np.ndarray:
-                Binary response vector of length `k` after noisy measurements.
+            Response:
+                Response vector of length `k` after noisy measurements.
         
         Raises:
             TypeError: If `chals` is not a np.ndarray.
             ValueError: If `chals` does not have shape (d+1, k).
-            AssertionError: If `mean` is not a float, or 
-                if `std` is not a non-negative float.
+            AssertionError: If `nmean` is not a float, or 
+                if `nstd` is not a non-negative float.
         """
         # types & ranges
         if not isinstance(chals, np.ndarray):
@@ -106,48 +232,23 @@ class APUF:
         if chals.shape[0] != self.d:
             raise ValueError(f"Expected {self.d}-bit challenge,\
                                 got {chals.shape[0]}")
-        assert isinstance(mean, float), "mean must be numeric"
-        assert isinstance(std, float) and std >= 0, "std must be non-negative"
+        assert isinstance(nmean, float), "nmean must be numeric"
+        assert isinstance(nstd, float) and nstd >= 0, "nstd must be nonnegative"
 
-        noise = np.random.normal(mean, std, self.d)
+        noise = np.random.normal(nmean, nstd, self.d)
 
         resp = (self.weights + noise) @ chals
 
-        return self.__determine_responses_vectorized(resp)
-
-
-    @staticmethod
-    def compact_responses(resp: np.ndarray) -> bytes:
-        """Pack a 1-D array of 0/1 response bits into a bytes object.
-
-        This method takes a numpy array of response bits (dtype np.int8)
-        and returns the packed bits as raw bytes, grouping each consecutive
-        8 bits into one byte (big-endian within each byte).
-
-        Args:
-            resp (np.ndarray): 1-D array of response bits, values must be
-                0 or 1, and dtype must be np.int8.
-
-        Returns:
-            bytes: The packed bytes.
-
-        Raises:
-            AssertionError: If `resp` is not a 1-D np.ndarray of dtype np.int8,
-                            or if it contains values other than 0 or 1.
-        """
-        # input validation
-        assert isinstance(resp, np.ndarray), "resp must be a numpy.ndarray"
-        assert resp.dtype == np.int8, f"resp bits must be np.int8,\
-                                        got {resp.dtype}"
-        assert resp.ndim == 1, f"resp must be 1-D array, got shape {resp.shape}"
-        assert set(resp).issubset({0, 1}), f"resp must contain only 0 or 1,\
-                                        got {set(resp)}"
-
-
-        return bytes(np.packbits(resp))
+        return self.__determine_responses(resp)
 
 
 
+# class XORPUF(APUF):
+#     """TODO - how does this even work?
+#     """
+#     def __init__(self, n: int = 2, d: int = 128,
+#                  mean: float = 0, std: float = 0.05):
+#         super().__init__(d, mean, std)
 
 
 def main():
