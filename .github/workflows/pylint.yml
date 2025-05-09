@@ -21,3 +21,6 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         pylint --rcfile=pylintrc $(git ls-files '*.py')
+    - name: Testing the classes with unittest
+      run: |
+        python -m unittest tests/*.py
