@@ -1,6 +1,6 @@
 # APUF
 
-[![PyPI version](https://img.shields.io/pypi/v/apuf.svg)](https://pypi.org/project/apuf)  
+[![PyPI version](https://img.shields.io/pypi/v/apuf.svg)](https://pypi.org/project/apuf) 
 [![CI coverage](https://github.com/nikita-tripathi-geo/APUF-simulation/actions/workflows/package-ci.yml/badge.svg)](https://github.com/nikita-tripathi-geo/APUF-simulation/actions/workflows/package-ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
