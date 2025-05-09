@@ -1,3 +1,5 @@
+# src/apuf/apuf.py
+
 """Simulate an delay-based PUFs and their challenge-response behaviors
 using Lim's Linear Additive Delay Model (LADM).
 
@@ -149,7 +151,6 @@ class LADM(ABC):
         """
         # input validation
         assert isinstance(resp, Response), "resp must be a Response"
-
         return bytes(resp)
 
 
