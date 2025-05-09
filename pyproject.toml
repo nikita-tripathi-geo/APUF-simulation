@@ -1,0 +1,26 @@
+[project]
+name = "apuf"
+version = "0.1.0"
+authors = [
+  { name="Nikita Tripathi", email="ntripathi99@gmail.com" },
+]
+description = "A library for simulating Arbiter PUFs and other delay-based PUFs."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "License :: Freeware",
+    "Natural Language :: English",
+    "Topic :: Security"
+]
+license = "MIT"
+license-files = ["LICENSE"]
+
+[project.urls]
+Homepage = "https://github.com/nikita-tripathi-geo/APUF-simulation"
+Issues = "https://github.com/nikita-tripathi-geo/APUF-simulation/issues"
