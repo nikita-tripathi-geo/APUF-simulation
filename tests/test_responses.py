@@ -24,7 +24,7 @@ class TestResponse(unittest.TestCase):  #pylint: disable=missing-class-docstring
         self.assertEqual(repr(r), "Response('[False  True  True False]')")
 
     def test_bytes(self):
-        # 1 0 1 0 0 0 0 1  → 0b10100001 = 0xa1
+        # 1 0 1 0 0 0 0 1  -> 0b10100001 = 0xa1
         r = Response([1, 0, 1, 0, 0, 0, 0, 1])
         self.assertEqual(bytes(r), b"\xa1")
 

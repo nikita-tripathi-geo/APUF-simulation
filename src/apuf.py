@@ -121,8 +121,7 @@ class Response:
 
 
 class LADM(ABC):
-    """Abstract interface for all delay-based PUFs using LADM.
-    """
+    """Abstract interface for all delay-based PUFs using LADM."""
 
     @abstractmethod
     def get_responses(self, chals: np.ndarray,
