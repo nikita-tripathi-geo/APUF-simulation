@@ -1,8 +1,9 @@
-import unittest     #pylint disable=missing-module-docstring
+#pylint: disable=missing-module-docstring
+import unittest
 from src.apuf import Response
 
 
-class TestResponse(unittest.TestCase):  #pylint disable=missing-class-docstring
+class TestResponse(unittest.TestCase):  #pylint: disable=missing-class-docstring
     def test_init_invalid_dim(self):
         # must be 1-D
         with self.assertRaises(ValueError):
