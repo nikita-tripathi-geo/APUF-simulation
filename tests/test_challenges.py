@@ -70,7 +70,7 @@ class TestGenerateNkChallenges(unittest.TestCase):  # pylint: disable=missing-cl
             np.testing.assert_array_equal(a, b)
 
 
-class TestUnitGeneration(unittest.TestCase):
+class TestUnitGeneration(unittest.TestCase):    # pylint: disable=missing-class-docstring
     def test_unit_generation_matches_generate_k(self):
         # same parameters should match
         params = (4, 5, 2025)
@@ -79,7 +79,7 @@ class TestUnitGeneration(unittest.TestCase):
         np.testing.assert_array_equal(out1, out2)
 
 
-class TestGenerateChallengesMP(unittest.TestCase):
+class TestGenerateChallengesMP(unittest.TestCase):  # pylint: disable=missing-class-docstring
     def test_invalid_params(self):
         with self.assertRaises(AssertionError):
             generate_challenges_mp(n=0, k=1, d=1, seed=1, proc=1)
