@@ -3,21 +3,23 @@
 """Simulate an delay-based PUFs and their challenge-response behaviors
 using Lim's Linear Additive Delay Model (LADM).
 
-# Usage: TODO UPDATE
+# Usage:
 ```
     # As a library
     from apuf import APUF, XORPUF
     from challenges import generate_k_challenges
 
     # Initialize a 64-layer APUF, all weights from N(0,0.05)
-    mypuf = APUF(d=64)
+    my_apuf = APUF(d=64)
+    # Initialize a 64-layer 5-XORPUF, with the same weights
+    my_xorpuf = XORPUF(children=[APUF(d=64) for _ in range(5)])
 
     # Generate 10 random 64-bit challenges
     chals = generate_k_challenges(10, 64)
 
-    # Get a noisy 10-bit response
-    resp = mypuf.get_noisy_responses(chals)
-    print(resp)
+    # Get noisy responses from both PUFs. Noise from N(0,0.005)
+    apuf_resp = my_apuf.get_noisy_responses(chals)
+    xorpuf_resp = my_xorpuf.get_noisy_responses(chals)
 ```
 """
 from abc import ABC, abstractmethod
