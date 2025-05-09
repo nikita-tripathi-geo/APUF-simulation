@@ -8,11 +8,12 @@ apuf - a library for simulating Arbiter PUFs and other delay-based PUFs.
 __version__ = "0.1.0"
 
 # Core classes / functions exposed at the top level
-from .apuf import APUF, XORPUF
+from .apuf import Response, APUF, XORPUF
 from .challenges import generate_k_challenges, generate_n_k_challenges
 
 # What’s exported with: `from apuf import *`
 __all__ = [
+    "Response",
     "APUF",
     "XORPUF",
     "generate_k_challenges",
