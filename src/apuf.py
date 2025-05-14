@@ -23,6 +23,7 @@ using Lim's Linear Additive Delay Model (LADM).
 ```
 """
 from abc import ABC, abstractmethod
+from typing import Union
 import numpy as np
 
 
@@ -127,7 +128,8 @@ class LADM(ABC):
 
     @abstractmethod
     def get_responses(self, chals: np.ndarray,
-                     nmean: float, nstd: float) -> Response:
+                      nmean: Union[int,float],
+                      nstd: Union[int,float]) -> Response:
         """Given `k` challenges and noise parameters, return a `k` bit response.
         """
         pass
@@ -166,27 +168,29 @@ class APUF(LADM):
         and computing noisy responses for many challenges at once.
     """
 
-    def __init__(self, d: int = 128, mean: float = 0.0,
-                 std: float = 0.05):
+    def __init__(self, d: int = 128, mean: Union[int,float] = 0.0,
+                 std: Union[int,float] = 0.05):
         """Initialize an APUF with `d` layers and a weight distribution.
 
         Args:
             d (int): Number of layers of APUF. Internally `d+1` weights are used
                 (one for each stage plus the arbiter). Defaults to `128`.
-            weight_mean (float): Mean of the Gaussian distribution used to
+            weight_mean (int, float): Mean of the Gaussian distribution used to
                 generate weights. Defaults to `0.0`.
-            weight_std (float): Standard deviation of the Gaussian distribution. 
-                Defaults to `0.05`.
-        
+            weight_std (int, float): Standard deviation of the Gaussian
+                distribution. Defaults to `0.05`.
+
         Raises:
             AssertionError: If `d` is not a positive integer, of `weight_mean`
-                is not a float, or if `weight_std` is not a non-negative float.
+                is not an int or float, or if `weight_std` is not a non-negative
+                int or float.
         """
         # sanity‐checks
         assert isinstance(d, int) and d > 0, "d must be a positive integer"
-        assert isinstance(mean, float), "mean must be a float"
-        assert isinstance(std, float) and std >= 0, "std must be non-negative"
-
+        assert isinstance(mean, Union[int,float]), "mean must be numeric"
+        assert (
+            isinstance(std, Union[int,float]) and std >= 0
+            ), "std must be non-negative"
 
         # We represent a `d`-layer APUF using `d+1` weights
         self.d = d + 1
@@ -204,27 +208,27 @@ class APUF(LADM):
 
 
     def get_responses(self, chals: np.ndarray,
-                            nmean: float = 0.0,
-                            nstd: float = 0.005) -> Response:
+                            nmean: Union[int,float] = 0.0,
+                            nstd: Union[int,float] = 0.005) -> Response:
         """Generate multi-bit (noisy) APUF responses.
 
         Args:
             chals (np.ndarray):
                 Sequence of challenges (phase vectors). Shape `(d+1, k)`.
-            nmean (float):
+            nmean (int, float):
                 Mean of Gaussian noise added to each weight. Defaults to `0.0`.
-            nstd (float):
+            nstd (int, float):
                 Standard deviation of Gaussian noise. Defaults to `0.005`.
 
         Returns:
             Response:
                 Response vector of length `k` after noisy measurements.
-        
+
         Raises:
             TypeError: If `chals` is not a np.ndarray.
             ValueError: If `chals` does not have shape (d+1, k).
-            AssertionError: If `nmean` is not a float, or 
-                if `nstd` is not a non-negative float.
+            AssertionError: If `nmean` is not numeric, or
+                if `nstd` is negative.
         """
         # types & ranges
         if not isinstance(chals, np.ndarray):
@@ -234,8 +238,10 @@ class APUF(LADM):
         if chals.shape[0] != self.d:
             raise ValueError(f"Expected {self.d}-bit challenge,\
                                 got {chals.shape[0]}")
-        assert isinstance(nmean, float), "nmean must be numeric"
-        assert isinstance(nstd, float) and nstd >= 0, "nstd must be nonnegative"
+        assert isinstance(nmean, Union[int,float]), "nmean must be numeric"
+        assert (
+            isinstance(nstd, Union[int,float]) and nstd >= 0
+            ), "nstd must be non-negative"
 
         noise = np.random.normal(nmean, nstd, self.d)
 
