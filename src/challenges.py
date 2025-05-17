@@ -6,12 +6,15 @@ This module provides:
   - generate_n_k_challenges(n, k, d, seed)
   - generate_challenges_mp(n, k, d, seed, processes)
 """
+
+from typing import Optional
 from multiprocessing import Pool, cpu_count
 import numpy as np
 
 
-def generate_k_challenges(k: int = 1, d: int = 128,
-                          seed: int = None) -> np.ndarray:
+def generate_k_challenges(
+    k: int = 1, d: int = 128, seed: Optional[int] = None
+) -> np.ndarray:
     """Generate `k` random challenges and map them to LADM phase vectors.
 
     Each challenge is a binary vector of length `d`. This function
@@ -61,8 +64,9 @@ def generate_k_challenges(k: int = 1, d: int = 128,
     return phi
 
 
-def generate_n_k_challenges(n: int = 1, k: int = 1,
-                            d: int = 128, seed: int = None) -> np.ndarray:
+def generate_n_k_challenges(
+    n: int = 1, k: int = 1, d: int = 128, seed: Optional[int] = None
+) -> np.ndarray:
     """Generate `n` sequences of `k` random challenges.
 
     Args:
@@ -127,9 +131,13 @@ def unit_generation(params: tuple[int, int, int]) -> np.ndarray:
     return generate_k_challenges(k, d, seed)
 
 
-def generate_challenges_mp(n: int = 1, k: int = 1,
-                            d: int = 128, seed: int = None,
-                            proc: int = cpu_count()) -> list[np.ndarray]:
+def generate_challenges_mp(
+    n: int = 1,
+    k: int = 1,
+    d: int = 128,
+    seed: Optional[int] = None,
+    proc: int = cpu_count(),
+) -> list[np.ndarray]:
     """Generate `n` sets of `k` random challenges in parallel.
 
     This function spawns a pool of worker processes to generate `n`
@@ -163,12 +171,9 @@ def generate_challenges_mp(n: int = 1, k: int = 1,
 
     # base is 0 if seed is None
     base = seed or 0
-    params = [(k, d, s+base) for s in range(n)]
+    params = [(k, d, s + base) for s in range(n)]
 
     with Pool(processes=proc) as pool:
-        chals = pool.map(
-            unit_generation,
-            params
-        )
+        chals = pool.map(unit_generation, params)
 
     return chals
