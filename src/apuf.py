@@ -121,6 +121,15 @@ class Response:
         diff = self ^ other
         return diff.hw
 
+    def fhd(self, other) -> Union[float, np.floating]:
+        """
+        Fractional Hamming distance between two Responses.
+        """
+        if not isinstance(other, Response):
+            raise TypeError("distance requires another Response")
+        # Length checking handled by xor/add/sub
+        diff = self ^ other
+        return np.mean(diff)
 
 
 class LADM(ABC):
