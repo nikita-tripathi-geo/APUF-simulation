@@ -12,6 +12,38 @@ from multiprocessing import Pool, cpu_count
 import numpy as np
 
 
+def convert_challenges(chals: np.ndarray, k: int, d: int) -> np.ndarray:
+    """A faithful representation of each challenge as its on Phi using LADM.
+    
+    Args:
+        chals (np.ndarray): Sequence of `k` challenges of length `d`.
+        k (int): Number of challenges.
+        d (int): Length of each challenge (number of bits).
+    
+    Returns:
+        np.ndarray: A phase matrix phi of shape (d, k), where each
+            column corresponds to the transformed challenge.
+
+    Raises:
+        AssertionError: If chals is not an ndarray with the correct dimensions.
+    """
+    assert (
+        isinstance(chals, np.ndarray) and chals.shape == (k, d)
+    ), "Challenges must be ndarrays with shape (k, d)"
+
+    # Map {0,1} -> {+1,-1}
+    chals_prime = 1 - 2 * chals
+
+    chals_prime = np.flip(chals_prime, axis=1)
+    phi = np.cumprod(chals_prime, axis=1)
+    phi = np.flip(phi, axis=1).T
+
+    # set last bit to 1 (last bit of psi has to be 1)
+    phi = np.append(phi, np.ones((1, k)), axis=0)
+
+    return phi
+
+
 def generate_k_challenges(
     k: int = 1, d: int = 128, seed: Optional[int] = None
 ) -> np.ndarray:
@@ -41,25 +73,38 @@ def generate_k_challenges(
     # Generate binary challenges
     if seed is not None:
         rng = np.random.default_rng(seed=seed)
-        chals = rng.integers(0, 2, (k, d))
+        chals = rng.integers(0, 2, (d, k))
     else:
-        chals = np.random.randint(0, 2, (k, d))
+        chals = np.random.randint(0, 2, (d, k))
 
     # Map {0,1} -> {+1,-1}
     chals_prime = 1 - 2 * chals
 
-    # Convert to phi
-    phi = np.ones((k, d))
+    ##################################################
+    # New way to do it (VERSION 1)
+    ##################################################
+    # We don't care about faithfully representing each
+    # challenge as its on Phi (they're all random anyways...)
 
-    for chal in range(k):
-        for i in range(d):
-            for j in range(i, d):
-                phi[chal][i] *= chals_prime[chal][j]
-
-    phi = np.transpose(phi)
+    # Cumulative product
+    phi = np.cumprod(chals_prime, axis=0)
+    phi = np.flip(phi, axis=0)
 
     # set last bit to 1 (last bit of psi has to be 1)
     phi[-1] = np.ones(k)
+
+    # Version 2 lives in `convert_challenges`
+
+    ##################################################
+    # YE OLDE way of converting to phi               #
+    ##################################################
+    # phi = np.ones((k, d))
+    # for chal in range(k):
+    #     for i in range(d):
+    #         for j in range(i, d):
+    #             phi[chal][i] *= chals_prime[chal][j]
+    # phi = np.transpose(phi)
+    ##################################################
 
     return phi
 
