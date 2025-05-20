@@ -5,7 +5,7 @@ apuf - a library for simulating Arbiter PUFs and other delay-based PUFs.
 """
 
 # Package version (keep in sync with pyproject.toml or bump manually)
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 # Core classes / functions exposed at the top level
 from .apuf import Response, APUF, XORPUF
