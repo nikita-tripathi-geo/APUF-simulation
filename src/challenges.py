@@ -182,7 +182,7 @@ def generate_challenges_mp(
     d: int = 128,
     seed: Optional[int] = None,
     proc: int = cpu_count(),
-) -> list[np.ndarray]:
+) -> np.ndarray:
     """Generate `n` sets of `k` random challenges in parallel.
 
     This function spawns a pool of worker processes to generate `n`
@@ -221,4 +221,4 @@ def generate_challenges_mp(
     with Pool(processes=proc) as pool:
         chals = pool.map(unit_generation, params)
 
-    return chals
+    return np.array(chals)
