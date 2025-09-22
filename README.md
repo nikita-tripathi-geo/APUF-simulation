@@ -7,7 +7,7 @@
 
 A Python package for simulating delay-based Physical Unclonable Functions (PUFs) using Lim's Linear Additive Delay Model (LADM).
 This module supports Arbiter PUFs (APUFs) and XORPUFs.
-Provides challenge generation, response simulation (with noise), and bit-packing utilities and computes inter-PUF and intra-PUF entropies.
+Provides challenge generation, response simulation (with noise), and bit-packing utilities.
 
 ## Features
 
